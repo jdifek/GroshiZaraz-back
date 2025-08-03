@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReviewTargetType {
+  bank
+  mfo
+  license
+  site
+}
+
+model Mfo {
+  id            Int     @id @default(autoincrement())
+  name          String
+  rating        Float
+  reviews       Int
+  logo          String
+  licenseNumber String?
+  isActive      Boolean @default(true)
+
+  minAmount    Int
+  maxAmount    Int
+  minTerm      Int
+  maxTerm      Int
+  rateMin      Float
+  rateMax      Float
+  approvalRate Int
+  decisionTime String
+
+  isFirstLoanZero    Boolean @default(false)
+  isInstantApproval  Boolean @default(false)
+  isNoIncomeProof    Boolean @default(false)
+  is24Support        Boolean @default(false)
+  isSafeTransactions Boolean @default(false)
+  isFlexibleTerms    Boolean @default(false)
+
+  ageFrom     Int
+  ageTo       Int
+  citizenship String @default("РФ")
+  documents   String @default("Паспорт РФ")
+
+  description      String?
+  phone            String?
+  website          String?
+  workTimeWeekdays String?
+  workTimeWeekend  String?
+  workTimeOnline   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  License License[]
+}
+
+model License {
+  id        Int      @id @default(autoincrement())
+  number    String
+  issuedAt  DateTime
+  validTill DateTime
+  mfoId     Int
+  mfo       Mfo      @relation(fields: [mfoId], references: [id])
+}
+
+model Question {
+  id           Int              @id @default(autoincrement())
+  textOriginal String
+  textUk       String?
+  textRu       String?
+  isModerated  Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  targetType   ReviewTargetType
+  targetId     Int
+
+  answers QuestionAnswer[]
+}
+
+model QuestionAnswer {
+  id           Int      @id @default(autoincrement())
+  questionId   Int
+  textOriginal String
+  textUk       String?
+  textRu       String?
+  isModerated  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id])
+}
+
+model Review {
+  id           Int              @id @default(autoincrement())
+  rating       Int
+  textOriginal String
+  textUk       String?
+  textRu       String?
+  isModerated  Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  targetType   ReviewTargetType
+  targetId     Int
+}
+
+// News
+
+model NewsCategory {
+  id   Int     @id @default(autoincrement())
+  name String
+  nameUk String
+    slug       String  @unique
+
+  icon String?
+  news News[]
+}
+
+model Author {
+  id         Int     @id @default(autoincrement())
+  name       String
+  nameUk     String?      // украинский перевод имени
+  slug       String  @unique
+  avatar     String
+  bio        String?
+  bioUk      String?      // украинский перевод биографии
+  position   String
+  positionUk String?      // украинский перевод должности
+  experience String
+  experienceUk String?    // украинский перевод опыта
+  followers  Int     @default(0)
+  color      String?
+  totalViews Int     @default(0)
+  totalPosts Int     @default(0)
+
+  expertise    String[]
+  expertiseUk  String[]    // украинская версия экспертизы
+  achievements String[]
+  achievementsUk String[]  // украинская версия достижений
+
+  telegram String?
+  linkedin String?
+  twitter  String?
+  email    String?
+
+  articles News[]
+}
+
+
+model NewsLike {
+  id        Int      @id @default(autoincrement())
+  newsId    Int
+  news      News     @relation(fields: [newsId], references: [id])
+  createdAt DateTime @default(now())
+
+  ipHash      String? // Защита от повторных лайков
+  fingerprint String?
+  cookieId    String?
+}
+model News {
+  id             Int      @id @default(autoincrement())
+  title          String
+  titleUk        String
+  slug           String   @unique
+  slugUk         String   @unique
+  body           String
+  bodyUk         String
+  published      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  views          Int      @default(0)
+  readingMinutes Int?
+
+  authorId Int
+  author   Author @relation(fields: [authorId], references: [id])
+
+  newsCategoryId Int?
+  NewsCategory   NewsCategory? @relation(fields: [newsCategoryId], references: [id])
+
+  NewsLike NewsLike[]
+}
