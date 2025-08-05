@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/newsController");
 
+router.get("/slug/:slug", controller.getBySlug);
+router.get("/category/:slug", controller.getByCategorySlug);
 router.get("/", controller.getAll);
 router.get("/:id", controller.getOne);
 router.post("/", controller.create);

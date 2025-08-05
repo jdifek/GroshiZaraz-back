@@ -9,6 +9,21 @@ exports.getAll = async () => {
     },
   });
 };
+exports.getByCategorySlug = async (slug) => {
+  return await prisma.news.findMany({
+    where: {
+      NewsCategory: {
+        slug: slug,
+      },
+      published: true, // если нужно только опубликованные
+    },
+    include: {
+      author: true,
+      NewsCategory: true,
+    },
+  });
+};
+
 exports.getStatistics = async () => {
   const [viewsResult, countResult] = await Promise.all([
     prisma.news.aggregate({ _sum: { views: true } }),
@@ -19,6 +34,15 @@ exports.getStatistics = async () => {
     totalViews: viewsResult._sum.views || 0,
     totalNews: countResult || 0,
   };
+};
+exports.getBySlug = async (slug) => {
+  return await prisma.news.findUnique({
+    where: { slug },
+    include: {
+      author: true,
+      NewsCategory: true,
+    },
+  });
 };
 
 exports.getOne = async (id) => {
