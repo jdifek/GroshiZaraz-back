@@ -8,6 +8,11 @@ exports.getAll = async () => {
 exports.getOne = async (id) => {
   return await prisma.mfo.findUnique({ where: { id: Number(id) } });
 };
+exports.getBySlug = async (slug) => {
+  return await prisma.mfo.findUnique({
+    where: { slug: slug },
+  });
+};
 
 exports.create = async (data) => {
   return await prisma.mfo.create({ data });

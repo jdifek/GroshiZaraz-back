@@ -22,6 +22,7 @@ model Mfo {
   logo          String
   licenseNumber String?
   isActive      Boolean @default(true)
+  slug  String? @unique
 
   minAmount    Int
   maxAmount    Int
@@ -177,4 +178,29 @@ model News {
   NewsCategory   NewsCategory? @relation(fields: [newsCategoryId], references: [id])
 
   NewsLike NewsLike[]
+}
+
+model FaqCategory {
+  id        Int           @id @default(autoincrement())
+  name      String
+  nameUk    String?
+  nameRu    String?
+  order     Int           @default(0)
+  icon      String?
+  questions FaqQuestion[]
+}
+
+model FaqQuestion {
+  id           Int          @id @default(autoincrement())
+  questionUk   String?
+  questionRu   String?
+  answerUk     String?
+  answerRu     String?
+  order        Int          @default(0)
+  isPublished  Boolean      @default(false)
+  categoryId   Int
+  category     FaqCategory  @relation(fields: [categoryId], references: [id])
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }
