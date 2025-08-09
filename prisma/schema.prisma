@@ -22,7 +22,7 @@ model Mfo {
   logo          String
   licenseNumber String?
   isActive      Boolean @default(true)
-  slug  String? @unique
+  slug          String? @unique
 
   minAmount    Int
   maxAmount    Int
@@ -55,7 +55,9 @@ model Mfo {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  License License[]
+  License            License[]
+  mfoSatelliteLinks  MfoSatelliteMfo[]
+  MfoSatelliteKeyMfo MfoSatelliteKeyMfo[]
 }
 
 model License {
@@ -69,6 +71,10 @@ model License {
 
 model Question {
   id           Int              @id @default(autoincrement())
+  name         String
+  email        String
+  subject      String
+  category     String
   textOriginal String
   textUk       String?
   textRu       String?
@@ -105,38 +111,37 @@ model Review {
 }
 
 // News
-
 model NewsCategory {
-  id   Int     @id @default(autoincrement())
-  name String
+  id     Int    @id @default(autoincrement())
+  name   String
   nameUk String
-    slug       String  @unique
+  slug   String @unique
 
   icon String?
   news News[]
 }
 
 model Author {
-  id         Int     @id @default(autoincrement())
-  name       String
-  nameUk     String?      // украинский перевод имени
-  slug       String  @unique
-  avatar     String
-  bio        String?
-  bioUk      String?      // украинский перевод биографии
-  position   String
-  positionUk String?      // украинский перевод должности
-  experience String
-  experienceUk String?    // украинский перевод опыта
-  followers  Int     @default(0)
-  color      String?
-  totalViews Int     @default(0)
-  totalPosts Int     @default(0)
+  id           Int     @id @default(autoincrement())
+  name         String
+  nameUk       String?
+  slug         String  @unique
+  avatar       String
+  bio          String?
+  bioUk        String?
+  position     String
+  positionUk   String?
+  experience   String
+  experienceUk String?
+  followers    Int     @default(0)
+  color        String?
+  totalViews   Int     @default(0)
+  totalPosts   Int     @default(0)
 
-  expertise    String[]
-  expertiseUk  String[]    // украинская версия экспертизы
-  achievements String[]
-  achievementsUk String[]  // украинская версия достижений
+  expertise      String[]
+  expertiseUk    String[]
+  achievements   String[]
+  achievementsUk String[]
 
   telegram String?
   linkedin String?
@@ -146,17 +151,17 @@ model Author {
   articles News[]
 }
 
-
 model NewsLike {
   id        Int      @id @default(autoincrement())
   newsId    Int
   news      News     @relation(fields: [newsId], references: [id])
   createdAt DateTime @default(now())
 
-  ipHash      String? // Защита от повторных лайков
+  ipHash      String?
   fingerprint String?
   cookieId    String?
 }
+
 model News {
   id             Int      @id @default(autoincrement())
   title          String
@@ -191,16 +196,86 @@ model FaqCategory {
 }
 
 model FaqQuestion {
-  id           Int          @id @default(autoincrement())
-  questionUk   String?
-  questionRu   String?
-  answerUk     String?
-  answerRu     String?
-  order        Int          @default(0)
-  isPublished  Boolean      @default(false)
-  categoryId   Int
-  category     FaqCategory  @relation(fields: [categoryId], references: [id])
+  id          Int         @id @default(autoincrement())
+  questionUk  String?
+  questionRu  String?
+  answerUk    String?
+  answerRu    String?
+  order       Int         @default(0)
+  isPublished Boolean     @default(false)
+  categoryId  Int
+  category    FaqCategory @relation(fields: [categoryId], references: [id])
 
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MfoSatelliteKey {
+  id     Int    @id @default(autoincrement())
+  keyUk  String
+  keyRu  String
+  slugUk String @unique
+  slugRu String @unique
+
+  metaTitleUk   String
+  metaTitleRu   String
+  metaDescUk    String
+  metaDescRu    String
+  titleUk       String
+  titleRu       String
+  descriptionUk String
+  descriptionRu String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  satellites MfoSatellite[]
+
+  mfoLinks MfoSatelliteKeyMfo[]
+}
+
+model MfoSatelliteKeyMfo {
+  id    Int @id @default(autoincrement())
+  keyId Int
+  mfoId Int
+
+  key MfoSatelliteKey @relation(fields: [keyId], references: [id])
+  mfo Mfo             @relation(fields: [mfoId], references: [id])
+
+  @@unique([keyId, mfoId])
+}
+
+model MfoSatellite {
+  id Int @id @default(autoincrement())
+
+  keyId Int
+  key   MfoSatelliteKey @relation(fields: [keyId], references: [id])
+
+  metaTitleUk   String
+  metaTitleRu   String
+  metaDescUk    String
+  metaDescRu    String
+  titleUk       String
+  titleRu       String
+  descriptionUk String
+  descriptionRu String
+
+  slugUk String @unique
+  slugRu String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mfoLinks MfoSatelliteMfo[]
+}
+
+model MfoSatelliteMfo {
+  id          Int @id @default(autoincrement())
+  satelliteId Int
+  mfoId       Int
+
+  satellite MfoSatellite @relation(fields: [satelliteId], references: [id])
+  mfo       Mfo          @relation(fields: [mfoId], references: [id])
+
+  @@unique([satelliteId, mfoId])
 }
