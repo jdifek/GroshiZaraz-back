@@ -18,23 +18,9 @@ exports.getOne = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 exports.create = async (req, res) => {
   try {
-    const {
-      userId,
-      textOriginal,
-      targetType,
-      targetId
-    } = req.body;
-
-    const result = await service.create({
-      userId,
-      textOriginal,
-      targetType,
-      targetId,
-    });
-
+    const result = await service.create(req.body);
     res.status(201).json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -43,18 +29,7 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const {
-      textUk,
-      textRu,
-      isModerated
-    } = req.body;
-
-    const result = await service.update(req.params.id, {
-      textUk,
-      textRu,
-      isModerated,
-    });
-
+    const result = await service.update(req.params.id, req.body);
     res.json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });
