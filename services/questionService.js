@@ -1,5 +1,5 @@
-const { PrismaClient, ReviewTargetType } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { ReviewTargetType } = require("@prisma/client");
+const prisma = require("../utils/prisma");
 
 exports.getAll = async () => {
   // Получаем все вопросы, кроме тех, где targetType = site

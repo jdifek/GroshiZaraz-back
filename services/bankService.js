@@ -1,6 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../utils/prisma");
 
-const prisma = new PrismaClient();
 
 exports.getAll = async () => {
   return await prisma.bank.findMany();

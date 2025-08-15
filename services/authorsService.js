@@ -1,9 +1,24 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../utils/prisma");
 
 exports.getAll = async () => {
-  return await prisma.author.findMany();
+  const authors = await prisma.author.findMany({
+    include: {
+      _count: {
+        select: { articles: true },
+      },
+      articles: {
+        select: { views: true },
+      },
+    },
+  });
+
+  return authors.map(a => ({
+    ...a,
+    totalPosts: a._count.articles,
+    totalViews: a.articles.reduce((sum, n) => sum + n.views, 0),
+  }));
 };
+
 
 exports.getOne = async (id) => {
   return await prisma.author.findUnique({ where: { id: Number(id) } });
