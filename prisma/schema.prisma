@@ -30,6 +30,41 @@ model User {
   updatedAt       DateTime          @updatedAt
 }
 
+// Добавляем модель экспертов
+model Expert {
+  id           Int     @id @default(autoincrement())
+  name         String
+  nameUk       String?
+  slug         String  @unique
+  avatar       String?
+  bio          String?
+  bioUk        String?
+  position     String
+  positionUk   String?
+  experience   String
+  experienceUk String?
+  isActive     Boolean @default(true)
+  color        String? // для визуального отличия ответов
+  totalAnswers Int     @default(0)
+
+  expertise      String[]
+  expertiseUk    String[]
+  achievements   String[]
+  achievementsUk String[]
+
+  telegram String?
+  linkedin String?
+  twitter  String?
+  email    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи с ответами
+  questionAnswers QuestionAnswer[]
+  reviewAnswers   ReviewAnswer[]
+}
+
 model Mfo {
   id            Int     @id @default(autoincrement())
   name          String
@@ -87,8 +122,8 @@ model License {
 
 model Question {
   id           Int              @id @default(autoincrement())
-  name         String
-  email        String
+  name         String?          // Делаем опциональным
+  email        String?          // Делаем опциональным
   subject      String
   category     String
   textOriginal String
@@ -109,9 +144,16 @@ model QuestionAnswer {
   textUk       String?
   textRu       String?
   isModerated  Boolean  @default(false)
+  
+  // Поля для идентификации автора
+  authorName   String?  // Для обычных пользователей
+  authorEmail  String?  // Для обычных пользователей
+  expertId     Int?     // Для экспертов
+  
   createdAt    DateTime @default(now())
 
   question Question @relation(fields: [questionId], references: [id])
+  expert   Expert?  @relation(fields: [expertId], references: [id])
 }
 
 model Review {
@@ -124,6 +166,28 @@ model Review {
   createdAt    DateTime         @default(now())
   targetType   ReviewTargetType
   targetId     Int
+
+  answers      ReviewAnswer[]
+}
+
+// Добавляем модель ответов на отзывы
+model ReviewAnswer {
+  id           Int      @id @default(autoincrement())
+  reviewId     Int
+  textOriginal String
+  textUk       String?
+  textRu       String?
+  isModerated  Boolean  @default(false)
+  
+  // Поля для идентификации автора
+  authorName   String?  // Для обычных пользователей
+  authorEmail  String?  // Для обычных пользователей
+  expertId     Int?     // Для экспертов
+  
+  createdAt    DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id])
+  expert Expert? @relation(fields: [expertId], references: [id])
 }
 
 // News

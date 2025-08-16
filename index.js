@@ -17,6 +17,7 @@ const faqRoutes = require("./routes/faqRoutes");
 const mfoSatelliteKeysRoutes = require("./routes/mfoSatelliteKeysRoutes");
 const mfoSatellitesRoutes = require("./routes/mfoSatellitesRoutes");
 const authRoutes = require("./routes/authRoutes");
+const questionAnswerRoutes = require("./routes/questionAnswerRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,7 @@ app.use(express.json());
 
 
 app.use("/api/auth", authRoutes);
+app.use("/api/question-answers", questionAnswerRoutes);
 app.use("/api/mfo-satellite-keys", mfoSatelliteKeysRoutes);
 app.use("/api/mfo-satellites", mfoSatellitesRoutes);
 app.use("/api/faq", faqRoutes);
