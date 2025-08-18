@@ -44,13 +44,17 @@ exports.update = async (req, res) => {
     const {
       textUk,
       textRu,
-      isModerated
+      isModerated,
+      authorEmail,
+      authorName
     } = req.body;
 
     const result = await service.update(req.params.id, {
       textUk,
       textRu,
       isModerated,
+      authorEmail,
+      authorName
     });
 
     res.json(result);

@@ -8,6 +8,28 @@ exports.getOne = (id) => prisma.mfoSatelliteKey.findUnique({
   where: { id },
   include: { satellites: true, mfoLinks: { include: { mfo: true } } }
 });
+exports.getShort = (q) => {
+  const where = {};
+
+  if (q) {
+    where.OR = [
+      { keyUk: { contains: q, mode: "insensitive" } },
+      { keyRu: { contains: q, mode: "insensitive" } },
+    ];
+  }
+
+  return prisma.mfoSatelliteKey.findMany({
+    where,
+    select: {
+      id: true,
+      keyUk: true,
+      keyRu: true,
+    },
+    orderBy: { id: "asc" },
+  });
+};
+
+
 
 // Создание ключа и привязка ко всем МФО
 exports.createWithAllMfo = async (data) => {

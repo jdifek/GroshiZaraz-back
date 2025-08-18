@@ -8,6 +8,8 @@ exports.getAll = async (req, res) => {
   }
 };
 
+
+
 exports.getOne = async (req, res) => {
   try {
     const item = await service.getOne(Number(req.params.id));

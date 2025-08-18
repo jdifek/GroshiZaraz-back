@@ -7,6 +7,15 @@ exports.getAll = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.getShort = async (req, res) => {
+  try {
+    const items = await service.getShort(req.query.q); // передаем только q
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 
 exports.getOne = async (req, res) => {
   try {
