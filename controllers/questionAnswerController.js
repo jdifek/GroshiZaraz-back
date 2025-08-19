@@ -20,16 +20,32 @@ exports.getOne = async (req, res) => {
 };
 
 // Создание только с нужными полями
+// controllers/questionAnswerController.js
 exports.create = async (req, res) => {
   try {
     const {
       questionId,
-      textOriginal
+      textOriginal,
+      textUk,
+      textRu,
+      expertId,
+      authorName,
+      authorEmail,
     } = req.body;
 
     const result = await service.create({
       questionId,
       textOriginal,
+      textUk,
+      textRu,
+      expertId,
+      authorName,
+      authorEmail,
+    });
+
+    await prisma.expert.update({
+      where: { id: expertId },
+      data: { totalAnswers: { increment: 1 } },
     });
 
     res.status(201).json(result);
@@ -37,6 +53,7 @@ exports.create = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 // Модерация
 exports.update = async (req, res) => {
@@ -46,7 +63,10 @@ exports.update = async (req, res) => {
       textRu,
       isModerated,
       authorEmail,
+      textOriginal,
+
       authorName
+      
     } = req.body;
 
     const result = await service.update(req.params.id, {
@@ -54,6 +74,8 @@ exports.update = async (req, res) => {
       textRu,
       isModerated,
       authorEmail,
+      textOriginal,
+
       authorName
     });
 
@@ -62,12 +84,22 @@ exports.update = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
-
 exports.remove = async (req, res) => {
   try {
+    const answer = await service.getOne(req.params.id);
+    if (!answer) return res.status(404).json({ error: "Not found" });
+
+    if (answer.expertId) {
+      await prisma.expert.update({
+        where: { id: answer.expertId },
+        data: { totalAnswers: { decrement: 1 } },
+      });
+    }
+
     await service.remove(req.params.id);
     res.status(204).send();
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+

@@ -11,6 +11,15 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/short", async (req, res) => {
+  try {
+    const items = await controller.getShort(req.query.q);
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get("/:id", async (req, res) => {
   try {
     const expert = await controller.getOne(req.params.id);

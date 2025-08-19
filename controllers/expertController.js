@@ -2,8 +2,30 @@ const prisma = require("../utils/prisma");
 
 exports.getAll = async () => {
   return await prisma.expert.findMany({
-    where: { isActive: true },
     orderBy: { totalAnswers: 'desc' }
+  });
+};
+exports.getShort = async (q) => {
+  const where = {};
+
+  if (q) {
+    where.OR = [
+      { name: { contains: q, mode: "insensitive" } },
+      { slug: { contains: q, mode: "insensitive" } },
+    ];
+  }
+
+  return await prisma.expert.findMany({
+    where,
+    select: {
+      id: true,
+      position: true,
+      totalAnswers: true,
+      avatar: true,
+      name: true,
+      slug: true,
+    },
+    orderBy: { id: "asc" },
   });
 };
 
