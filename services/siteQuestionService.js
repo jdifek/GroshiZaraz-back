@@ -20,7 +20,12 @@ exports.getAllSiteQuestions = async ({ onlyModerated, sortByModerated }) => {
     where,
     orderBy,
     include: {
-      answers: true,
+      answers: {
+        include: {
+          expert: true // Включаем информацию об эксперте
+        },
+        orderBy: { createdAt: 'desc' }
+      },
     },
   });
 };

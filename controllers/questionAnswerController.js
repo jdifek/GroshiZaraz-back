@@ -43,10 +43,16 @@ exports.create = async (req, res) => {
       authorEmail,
     });
 
-    await prisma.expert.update({
-      where: { id: expertId },
-      data: { totalAnswers: { increment: 1 } },
-    });
+    if (expertId) {
+      await prisma.expert.update({
+        where: { id: expertId },
+        data: {
+          totalAnswers: {
+            increment: 1
+          }
+        }
+      });
+    }
 
     res.status(201).json(result);
   } catch (err) {
