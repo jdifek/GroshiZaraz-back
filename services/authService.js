@@ -36,7 +36,6 @@ exports.refresh = async (refreshToken) => {
 exports.getProfile = async (userId) => {
   return prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, role: true, firstName: true, lastName: true },
   });
 };
 
