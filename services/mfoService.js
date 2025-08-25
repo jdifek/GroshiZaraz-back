@@ -23,7 +23,14 @@ exports.getBySlug = async (slug) => {
       targetType: 'mfo',
       targetId: mfoWithQuestions.id,
     },
+    include: {
+      answers: {
+        include: { expert: true },
+        orderBy: { createdAt: 'desc' }
+      },
+    },
   });
+  
 
   return {
     ...mfoWithQuestions,
