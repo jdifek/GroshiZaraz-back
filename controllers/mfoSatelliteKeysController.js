@@ -7,6 +7,16 @@ exports.getAll = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.getBySlug = async (req, res) => {
+  try {
+    const item = await service.getBySlug(req.params.slug);
+    if (!item) return res.status(404).json({ error: "Not found" });
+    res.json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 exports.getShort = async (req, res) => {
   try {
     const items = await service.getShort(req.query.q); // передаем только q

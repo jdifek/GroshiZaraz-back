@@ -3,6 +3,8 @@ const router = express.Router();
 const controller = require("../controllers/mfoController");
 
 router.get("/", controller.getAll);
+router.get('/all-20-random-keys', controller.randomKeys)
+router.get('/all-mfo-from-key', controller.getBySlugKey)
 router.get("/slug/:slug", controller.getBySlug);
 router.get("/:id", controller.getOne);
 router.post("/", controller.create);

@@ -3,6 +3,18 @@ const prisma = require("../utils/prisma");
 exports.getAll = () => prisma.mfoSatelliteKey.findMany({
   include: { satellites: true, mfoLinks: { include: { mfo: true } } }
 });
+exports.getBySlug = (slug) => prisma.mfoSatelliteKey.findFirst({
+  where: {
+    OR: [
+      { slugRu: slug },
+      { slugUk: slug }
+    ]
+  },
+  include: {
+    satellites: true,
+    mfoLinks: { include: { mfo: true } }
+  }
+});
 
 exports.getOne = (id) => prisma.mfoSatelliteKey.findUnique({
   where: { id },

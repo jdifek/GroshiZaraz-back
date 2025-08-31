@@ -84,6 +84,7 @@ model Mfo {
   approvalRate Int
   decisionTime String
 
+  // Условия
   isFirstLoanZero    Boolean @default(false)
   isInstantApproval  Boolean @default(false)
   isNoIncomeProof    Boolean @default(false)
@@ -91,11 +92,13 @@ model Mfo {
   isSafeTransactions Boolean @default(false)
   isFlexibleTerms    Boolean @default(false)
 
+  // Требования
   ageFrom     Int
   ageTo       Int
   citizenship String @default("РФ")
   documents   String @default("Паспорт РФ")
 
+  // Контакты и описание
   description      String?
   phone            String?
   website          String?
@@ -103,12 +106,31 @@ model Mfo {
   workTimeWeekend  String?
   workTimeOnline   String?
 
+  // Новые поля
+  dailyRate     Float?   // ставка в день (%)
+  commission    Float?   // комиссия (% или сумма)
+  collateral    String?  // залог (если требуется)
+  decisionType  String?  // решение по займу (авто/ручное)
+  application   String?  // подача заявки (онлайн/офлайн)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Связи
   License            License[]
   mfoSatelliteLinks  MfoSatelliteMfo[]
   MfoSatelliteKeyMfo MfoSatelliteKeyMfo[]
+  promoCodes         PromoCode[]
+}
+
+model PromoCode {
+  id        Int      @id @default(autoincrement())
+  code      String
+  discount  String   // описание скидки (например "1000₽", "0%", "15%")
+  condition String?  // условия применения
+  validTill DateTime?
+  mfo       Mfo      @relation(fields: [mfoId], references: [id])
+  mfoId     Int
 }
 
 model License {

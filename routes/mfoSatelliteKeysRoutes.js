@@ -4,6 +4,7 @@ const controller = require("../controllers/mfoSatelliteKeysController");
 
 router.get("/", controller.getAll);
 router.get("/short", controller.getShort); // новый эндпоинт
+router.get("/slug/:slug", controller.getBySlug);
 
 router.get("/:id", controller.getOne);
 router.post("/", controller.createWithAllMfo); // теперь создаёт с привязкой ко всем МФО

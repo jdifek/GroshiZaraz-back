@@ -8,6 +8,23 @@ exports.getAll = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.randomKeys = async (req, res) => {
+  try {
+    const result = await service.randomKeys();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+exports.getBySlugKey = async (req, res) => {
+  try {
+    const result = await service.getBySlugKey(req.params.slug);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 exports.getBySlug = async (req, res) => {
   try {
     const result = await service.getBySlug(req.params.slug);
