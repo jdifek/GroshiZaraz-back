@@ -2,6 +2,8 @@ const prisma = require("../utils/prisma");
 
 exports.getAll = async () => {
   return await prisma.news.findMany({
+    orderBy: { createdAt: "desc" },
+
     include: {
       author: true,
       NewsCategory: true,
@@ -14,7 +16,7 @@ exports.getByCategorySlug = async (slug) => {
       NewsCategory: {
         slug: slug,
       },
-      published: true, // если нужно только опубликованные
+      published: true, 
     },
     include: {
       author: true,

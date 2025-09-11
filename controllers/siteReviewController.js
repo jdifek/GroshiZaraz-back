@@ -20,8 +20,14 @@ exports.getOne = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
+  const data = {
+    ...req.body,
+    targetType: "site",
+    targetId: 1,
+  };
+
   try {
-    const result = await service.create(req.body);
+    const result = await service.create(data);
     res.status(201).json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });

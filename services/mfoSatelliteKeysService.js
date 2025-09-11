@@ -66,3 +66,88 @@ exports.update = (id, data) => prisma.mfoSatelliteKey.update({
 });
 
 exports.remove = (id) => prisma.mfoSatelliteKey.delete({ where: { id } });
+
+exports.updateMfoLinks = async (keyId, addMfoIds, removeMfoIds) => {
+  // Начинаем транзакцию
+  return prisma.$transaction(async (tx) => {
+    // Удаляем связи
+    if (removeMfoIds.length > 0) {
+      await tx.mfoSatelliteKeyMfo.deleteMany({
+        where: {
+          keyId: keyId,
+          mfoId: { in: removeMfoIds }
+        }
+      });
+    }
+
+    // Добавляем новые связи
+    if (addMfoIds.length > 0) {
+      // Проверяем, какие связи уже существуют
+      const existingLinks = await tx.mfoSatelliteKeyMfo.findMany({
+        where: {
+          keyId: keyId,
+          mfoId: { in: addMfoIds }
+        },
+        select: { mfoId: true }
+      });
+
+      const existingMfoIds = existingLinks.map(link => link.mfoId);
+      const newMfoIds = addMfoIds.filter(id => !existingMfoIds.includes(id));
+
+      if (newMfoIds.length > 0) {
+        await tx.mfoSatelliteKeyMfo.createMany({
+          data: newMfoIds.map(mfoId => ({
+            keyId: keyId,
+            mfoId: mfoId
+          }))
+        });
+      }
+    }
+
+    // Возвращаем обновленный ключ
+    return tx.mfoSatelliteKey.findUnique({
+      where: { id: keyId },
+      include: { 
+        satellites: true, 
+        mfoLinks: { 
+          include: { mfo: true } 
+        } 
+      }
+    });
+  });
+};
+
+exports.addMfoToKey = async (keyId, mfoId) => {
+  // Проверяем, не существует ли уже такая связь
+  const existingLink = await prisma.mfoSatelliteKeyMfo.findUnique({
+    where: {
+      keyId_mfoId: { keyId, mfoId }
+    }
+  });
+
+  if (existingLink) {
+    throw new Error('МФО уже привязано к этому ключу');
+  }
+
+  await prisma.mfoSatelliteKeyMfo.create({
+    data: { keyId, mfoId }
+  });
+
+  return prisma.mfoSatelliteKey.findUnique({
+    where: { id: keyId },
+    include: { 
+      satellites: true, 
+      mfoLinks: { 
+        include: { mfo: true } 
+      } 
+    }
+  });
+};
+
+exports.removeMfoFromKey = async (keyId, mfoId) => {
+  return prisma.mfoSatelliteKeyMfo.delete({
+    where: {
+      keyId_mfoId: { keyId, mfoId }
+    }
+  });
+};

@@ -1,9 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const { subDays, startOfDay } = require('date-fns');
 
 const userRoutes = require("./routes/userRoutes");
-const bankRoutes = require("./routes/bankRoutes");
 const mfoRoutes = require("./routes/mfoRoutes");
 const authorsRoutes = require("./routes/authorsRoutes");
 const newsCategoriesRoutes = require("./routes/newsCategoriesRoutes");
@@ -44,6 +44,89 @@ app.use("/api/questions", questionRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/site-reviews", siteReviewRoutes);
 app.use("/api/site-questions", siteQuestionRoutes);
+
+app.get("/api/dashboard", async (req, res) => {
+  try {
+    // 1. МФО
+    const totalMfos = await prisma.mfo.count();
+    const newMfos = await prisma.mfo.count({
+      where: { createdAt: { gte: subDays(new Date(), 30) } },
+    });
+
+    // 2. Новости
+    const totalNews = await prisma.news.count();
+    const newArticles = await prisma.news.count({
+      where: { createdAt: { gte: subDays(new Date(), 30) } },
+    });
+
+    // 3. Просмотры
+    const totalViewsAgg = await prisma.news.aggregate({
+      _sum: { views: true },
+    });
+    const totalViews = totalViewsAgg._sum.views || 0;
+
+    // 4. Отзывы на модерации
+    const pendingReviews = await prisma.review.count({
+      where: { isModerated: false },
+    });
+
+    // 5. Активность за неделю (кол-во новых отзывов по дням)
+    const weeklyViews = [];
+    for (let i = 6; i >= 0; i--) {
+      const dayStart = startOfDay(subDays(new Date(), i));
+      const dayEnd = subDays(dayStart, -1); // конец дня
+      const count = await prisma.review.count({
+        where: { createdAt: { gte: dayStart, lt: dayEnd } },
+      });
+      weeklyViews.push(count);
+    }
+
+    // 6. Последние действия (3 последних по типу)
+    const recentMfos = await prisma.mfo.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: { id: true, name: true, createdAt: true },
+    });
+
+    const recentNews = await prisma.news.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: { id: true, title: true, createdAt: true },
+    });
+
+    const recentReviews = await prisma.review.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: { id: true, textOriginal: true, createdAt: true },
+    });
+
+    const recentUsers = await prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: { id: true, email: true, createdAt: true },
+    });
+
+    const recentActivity = [
+      ...recentMfos.map((m) => ({ type: "mfo", title: `Добавлено МФО "${m.name}"`, time: m.createdAt })),
+      ...recentNews.map((n) => ({ type: "article", title: `Опубликована статья "${n.title}"`, time: n.createdAt })),
+      ...recentReviews.map((r) => ({ type: "review", title: `Новый отзыв`, time: r.createdAt })),
+      ...recentUsers.map((u) => ({ type: "user", title: `Новый пользователь ${u.email}`, time: u.createdAt })),
+    ].sort((a, b) => b.time.getTime() - a.time.getTime()).slice(0, 10);
+
+    res.json({
+      mfos: totalMfos,
+      monthlyStats: { newMfos, newArticles, newReviews: 0, totalUsers: await prisma.user.count() },
+      totalNews,
+      totalViews,
+      pendingReviews,
+      weeklyViews,
+      recentActivity,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+});
 
 app.get("/api/rates", async (req, res) => {
   try {

@@ -16,7 +16,41 @@ exports.getBySlug = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.updateMfoLinks = async (req, res) => {
+  try {
+    const keyId = parseInt(req.params.id);
+    const { addMfoIds = [], removeMfoIds = [] } = req.body;
 
+    const key = await service.updateMfoLinks(keyId, addMfoIds, removeMfoIds);
+    res.json(key);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.addMfoToKey = async (req, res) => {
+  try {
+    const keyId = parseInt(req.params.id);
+    const { mfoId } = req.body;
+
+    const key = await service.addMfoToKey(keyId, mfoId);
+    res.json(key);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.removeMfoFromKey = async (req, res) => {
+  try {
+    const keyId = parseInt(req.params.id);
+    const mfoId = parseInt(req.params.mfoId);
+
+    await service.removeMfoFromKey(keyId, mfoId);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 exports.getShort = async (req, res) => {
   try {
     const items = await service.getShort(req.query.q); // передаем только q
