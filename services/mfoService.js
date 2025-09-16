@@ -8,7 +8,7 @@ exports.getAll = async () => {
 };
 
 
-exports.getBySlug = async (slug) => {
+exports.getBySlugKey = async (slug) => {
   // Сначала ищем в ключах (RU или UK)
   const key = await prisma.mfoSatelliteKey.findFirst({
     where: {
@@ -102,26 +102,42 @@ exports.getOne = async (id) => {
   });
 };
 
-exports.getBySlug = async (slug) => {
-  const mfoWithQuestions = await prisma.mfo.findUnique({
+exports.getBySlug = async (slug, isSite = false) => {
+  const mfoWithData = await prisma.mfo.findUnique({
     where: { slug },
-    include: { promoCodes: true }, // включаем промокоды
+    include: { promoCodes: true },
   });
 
-  if (!mfoWithQuestions) {
+  if (!mfoWithData) {
     throw new Error(`MFO with slug "${slug}" not found`);
   }
 
+  // Вопросы
   const questions = await prisma.question.findMany({
-    where: { targetType: 'mfo', targetId: mfoWithQuestions.id },
-    include: { answers: { include: { expert: true }, orderBy: { createdAt: 'desc' } } },
+    where: { targetType: "mfo", targetId: mfoWithData.id },
+    include: { answers: { include: { expert: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Отзывы с фильтром isModerated для сайта
+  const reviews = await prisma.review.findMany({
+    where: {
+      targetType: "mfo",
+      targetId: mfoWithData.id,
+      ...(isSite ? { isModerated: true } : {}),
+    },
+    include: { answers: { include: { expert: true } } },
+    orderBy: { createdAt: "desc" },
   });
 
   return {
-    ...mfoWithQuestions,
+    ...mfoWithData,
     questions,
+    reviews,
   };
 };
+
+
 
 
 exports.create = async (data) => {
@@ -132,15 +148,15 @@ exports.create = async (data) => {
       ...mfoData,
       ...(promoCodes && Array.isArray(promoCodes)
         ? {
-            promoCodes: {
-              create: promoCodes.map(pc => ({
-                code: pc.code,
-                discount: pc.discount,
-                condition: pc.condition,
-                validTill: new Date(pc.validTill),
-              })),
-            },
-          }
+          promoCodes: {
+            create: promoCodes.map(pc => ({
+              code: pc.code,
+              discount: pc.discount,
+              condition: pc.condition,
+              validTill: new Date(pc.validTill),
+            })),
+          },
+        }
         : {}),
     },
   });
@@ -158,18 +174,18 @@ exports.update = async (id, data) => {
       // Обновляем промокоды только если они есть
       ...(promoCodes && Array.isArray(promoCodes)
         ? {
-            promoCodes: {
-              // Очищаем старые промокоды
-              deleteMany: {},
-              // Создаём новые
-              create: promoCodes.map(pc => ({
-                code: pc.code,
-                discount: pc.discount,
-                condition: pc.condition,
-                validTill: new Date(pc.validTill),
-              })),
-            },
-          }
+          promoCodes: {
+            // Очищаем старые промокоды
+            deleteMany: {},
+            // Создаём новые
+            create: promoCodes.map(pc => ({
+              code: pc.code,
+              discount: pc.discount,
+              condition: pc.condition,
+              validTill: new Date(pc.validTill),
+            })),
+          },
+        }
         : {}),
     },
   });

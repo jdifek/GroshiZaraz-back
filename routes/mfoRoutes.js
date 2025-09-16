@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/mfoController");
+const siteMiddleware = require("../middlewares/siteMiddleware");
+router.use(siteMiddleware);
 
 router.get("/", controller.getAll);
 router.get('/all-20-random-keys', controller.randomKeys)

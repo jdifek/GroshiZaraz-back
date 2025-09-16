@@ -2,25 +2,34 @@ const { ReviewTargetType } = require("@prisma/client");
 const prisma = require("../utils/prisma");
 
 exports.getAll = async () => {
+  // Получаем все отзывы по targetType = mfo
   const reviews = await prisma.review.findMany({
+    where: { targetType: ReviewTargetType.mfo },
     include: {
       answers: {
         include: {
-          expert: true, // подтягиваем инфу об эксперте
+          expert: true, // тянем эксперта
         },
         orderBy: { createdAt: "desc" },
       },
     },
+    orderBy: [
+      { isModerated: "asc" }, // сначала не промодерированные
+      { createdAt: "desc" },  // потом по дате
+    ],
   });
 
-  // Дополнительно можно подтягивать МФО (или банк/лицензию) по targetId
-  // как сделано в questions.getAll
+  // Считаем количество непромодерированных
+  const pendingCount = await prisma.review.count({
+    where: {
+      targetType: ReviewTargetType.mfo,
+      isModerated: false,
+    },
+  });
+
+  // Собираем id всех МФО из отзывов
   const mfoIds = [
-    ...new Set(
-      reviews
-        .filter((r) => r.targetType === ReviewTargetType.mfo)
-        .map((r) => r.targetId)
-    ),
+    ...new Set(reviews.map((r) => r.targetId)),
   ];
 
   let mfoMap = new Map();
@@ -29,13 +38,15 @@ exports.getAll = async () => {
     mfoMap = new Map(mfos.map((mfo) => [mfo.id, mfo]));
   }
 
-  // Добавляем поле mfo в отзыв (как у вопросов)
-  return reviews.map((r) => ({
-    ...r,
-    mfo: r.targetType === ReviewTargetType.mfo ? mfoMap.get(r.targetId) || null : null,
-  }));
+  // Добавляем в каждый отзыв поле mfo
+  return {
+    pendingCount,
+    reviews: reviews.map((r) => ({
+      ...r,
+      mfo: mfoMap.get(r.targetId) || null,
+    })),
+  };
 };
-
 exports.getOne = async (id) => {
   return await prisma.review.findUnique({
     where: { id: Number(id) },

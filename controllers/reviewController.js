@@ -27,7 +27,9 @@ exports.create = async (req, res) => {
       rating,
       textOriginal,
       targetType,
-      targetId
+      targetId,
+      authorName,
+      authorEmail
     } = req.body;
 
     const result = await service.create({
@@ -36,6 +38,8 @@ exports.create = async (req, res) => {
       textOriginal,
       targetType,
       targetId,
+      authorName,
+      authorEmail
     });
 
     res.status(201).json(result);

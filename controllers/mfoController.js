@@ -27,7 +27,7 @@ exports.getBySlugKey = async (req, res) => {
 };
 exports.getBySlug = async (req, res) => {
   try {
-    const result = await service.getBySlug(req.params.slug);
+    const result = await service.getBySlug(req.params.slug, req.isSite); // передаём флаг
     if (!result) return res.status(404).json({ error: "Not found" });
     res.json(result);
   } catch (err) {
