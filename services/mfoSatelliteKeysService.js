@@ -3,18 +3,58 @@ const prisma = require("../utils/prisma");
 exports.getAll = () => prisma.mfoSatelliteKey.findMany({
   include: { satellites: true, mfoLinks: { include: { mfo: true } } }
 });
-exports.getBySlug = (slug) => prisma.mfoSatelliteKey.findFirst({
-  where: {
-    OR: [
-      { slugRu: slug },
-      { slugUk: slug }
-    ]
-  },
-  include: {
-    satellites: true,
-    mfoLinks: { include: { mfo: true } }
+exports.getBySlug = async (slug, sortBy = "rating") => {
+  try {
+    console.log("📌 getBySlug called");
+    console.log("Slug:", slug);
+    console.log("SortBy:", sortBy);
+
+    // mapping для безопасности
+    const sortableFields = {
+      rating: "rating",
+      rate: "dailyRate",
+      approval: "approvalRate",
+      decisionTime: "decisionTime",
+      maxAmount: "maxAmount",
+    };
+
+    const orderField = sortableFields[sortBy] || "rating";
+    console.log("Using order field:", orderField);
+
+    // Получаем ключ без сортировки на уровне Prisma
+    const result = await prisma.mfoSatelliteKey.findFirst({
+      where: {
+        OR: [{ slugRu: slug }, { slugUk: slug }],
+      },
+      include: {
+        satellites: true,
+        mfoLinks: { include: { mfo: true } },
+      },
+    });
+
+    if (!result) {
+      console.warn(`⚠️ Satellite key not found for slug="${slug}"`);
+      return null;
+    }
+
+    // Сортировка на JS, безопасная даже если mfo или поле пустое
+    if (result.mfoLinks && result.mfoLinks.length > 0) {
+      result.mfoLinks.sort((a, b) => {
+        const aVal = a.mfo?.[orderField] ?? 0;
+        const bVal = b.mfo?.[orderField] ?? 0;
+        return bVal - aVal; // по убыванию
+      });
+    }
+
+    console.log(`✅ Found satellite key with id=${result.id}, mfoLinks=${result.mfoLinks.length}`);
+    return result;
+  } catch (err) {
+    console.error("❌ Error in getBySlug:", err);
+    throw err;
   }
-});
+};
+
+
 
 exports.getOne = (id) => prisma.mfoSatelliteKey.findUnique({
   where: { id },

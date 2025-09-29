@@ -1,13 +1,18 @@
 const service = require("../services/mfoService");
 
+// Контроллер
 exports.getAll = async (req, res) => {
   try {
-    const result = await service.getAll();
+    const { sortBy = "rating", order = "desc" } = req.query;
+
+    const result = await service.getAll(sortBy, order);
     res.json(result);
   } catch (err) {
+    console.error("Error in getAll:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 exports.randomKeys = async (req, res) => {
   try {

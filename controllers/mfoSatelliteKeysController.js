@@ -9,13 +9,22 @@ exports.getAll = async (req, res) => {
 };
 exports.getBySlug = async (req, res) => {
   try {
-    const item = await service.getBySlug(req.params.slug);
-    if (!item) return res.status(404).json({ error: "Not found" });
+    const slug = req.params.slug;  
+    const sortBy = req.query.sortBy;    
+    const item = await service.getBySlug(slug, sortBy);
+
+    if (!item) {
+      return res.status(404).json({ error: `Ключ с slug="${slug}" не найден` });
+    }
+
     res.json(item);
   } catch (err) {
+    console.error("Ошибка при getBySlug:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
+
 exports.updateMfoLinks = async (req, res) => {
   try {
     const keyId = parseInt(req.params.id);

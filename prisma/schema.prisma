@@ -20,14 +20,14 @@ enum Role {
 }
 
 model User {
-  id              Int               @id @default(autoincrement())
-  email           String            @unique
-  passwordHash    String
-  firstName       String?
-  lastName        String?
-  role            Role              @default(USER)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // Добавляем модель экспертов
@@ -68,13 +68,13 @@ model Expert {
 model Mfo {
   id            Int     @id @default(autoincrement())
   name          String
-  UtmLink          String?
+  UtmLink       String?
   rating        Float
   reviews       Int
   logo          String
   licenseNumber String?
   isActive      Boolean @default(true)
-  slug String @unique
+  slug          String  @unique
 
   minAmount    Int
   maxAmount    Int
@@ -108,11 +108,11 @@ model Mfo {
   workTimeOnline   String?
 
   // Новые поля
-  dailyRate     Float?   // ставка в день (%)
-  commission    Float?   // комиссия (% или сумма)
-  collateral    String?  // залог (если требуется)
-  decisionType  String?  // решение по займу (авто/ручное)
-  application   String?  // подача заявки (онлайн/офлайн)
+  dailyRate    Float? // ставка в день (%)
+  commission   Float? // комиссия (% или сумма)
+  collateral   String? // залог (если требуется)
+  decisionType String? // решение по займу (авто/ручное)
+  application  String? // подача заявки (онлайн/офлайн)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -125,13 +125,15 @@ model Mfo {
 }
 
 model PromoCode {
-  id        Int      @id @default(autoincrement())
-  code      String
-  discount  String   // описание скидки (например "1000₽", "0%", "15%")
-  condition String?  // условия применения
-  validTill DateTime?
-  mfo       Mfo      @relation(fields: [mfoId], references: [id])
-  mfoId     Int
+  id          Int       @id @default(autoincrement())
+  code        String
+  discountUk  String?
+  discount    String
+  conditionUk String?
+  condition   String?
+  validTill   DateTime?
+  mfo         Mfo       @relation(fields: [mfoId], references: [id])
+  mfoId       Int
 }
 
 model License {
@@ -145,8 +147,8 @@ model License {
 
 model Question {
   id           Int              @id @default(autoincrement())
-  name         String?          // Делаем опциональным
-  email        String?          // Делаем опциональным
+  name         String? // Делаем опциональным
+  email        String? // Делаем опциональным
   subject      String
   category     String
   textOriginal String
@@ -161,19 +163,19 @@ model Question {
 }
 
 model QuestionAnswer {
-  id           Int      @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   questionId   Int
   textOriginal String
   textUk       String?
   textRu       String?
-  isModerated  Boolean  @default(false)
-  
+  isModerated  Boolean @default(false)
+
   // Поля для идентификации автора
-  authorName   String?  // Для обычных пользователей
-  authorEmail  String?  // Для обычных пользователей
-  expertId     Int?     // Для экспертов
-  
-  createdAt    DateTime @default(now())
+  authorName  String? // Для обычных пользователей
+  authorEmail String? // Для обычных пользователей
+  expertId    Int? // Для экспертов
+
+  createdAt DateTime @default(now())
 
   question Question @relation(fields: [questionId], references: [id])
   expert   Expert?  @relation(fields: [expertId], references: [id])
@@ -189,28 +191,28 @@ model Review {
   createdAt    DateTime         @default(now())
   targetType   ReviewTargetType
   targetId     Int
- authorName   String?  // Для обычных пользователей
-  authorEmail  String?  // Для обычных пользователей
+  authorName   String? // Для обычных пользователей
+  authorEmail  String? // Для обычных пользователей
   answers      ReviewAnswer[]
 }
 
 // Добавляем модель ответов на отзывы
 model ReviewAnswer {
-  id           Int      @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   reviewId     Int
   textOriginal String
   textUk       String?
   textRu       String?
-  isModerated  Boolean  @default(false)
-  
-  // Поля для идентификации автора
-  authorName   String?  // Для обычных пользователей
-  authorEmail  String?  // Для обычных пользователей
-  expertId     Int?     // Для экспертов
-  
-  createdAt    DateTime @default(now())
+  isModerated  Boolean @default(false)
 
-  review Review @relation(fields: [reviewId], references: [id])
+  // Поля для идентификации автора
+  authorName  String? // Для обычных пользователей
+  authorEmail String? // Для обычных пользователей
+  expertId    Int? // Для экспертов
+
+  createdAt DateTime @default(now())
+
+  review Review  @relation(fields: [reviewId], references: [id])
   expert Expert? @relation(fields: [expertId], references: [id])
 }
 

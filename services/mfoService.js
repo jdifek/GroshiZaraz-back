@@ -1,8 +1,23 @@
 const prisma = require("../utils/prisma");
-exports.getAll = async () => {
+exports.getAll = async (sortBy = "rating", order = "desc") => {
+  // mapping для безопасности
+  const sortableFields = {
+    rating: "rating",
+    rate: "dailyRate",
+    approval: "approvalRate",
+    decisionTime: "decisionTime",
+    maxAmount: "maxAmount",
+  };
+
+  // если передан некорректный ключ, используем рейтинг по умолчанию
+  const orderField = sortableFields[sortBy] || "rating";
+
   return await prisma.mfo.findMany({
     include: {
       promoCodes: true, // включаем промокоды
+    },
+    orderBy: {
+      [orderField]: order, // 'asc' или 'desc'
     },
   });
 };
