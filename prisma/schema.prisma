@@ -281,7 +281,7 @@ model News {
   updatedAt      DateTime @updatedAt
   views          Int      @default(0)
   readingMinutes Int?
-
+ image          String?
   authorId Int
   author   Author @relation(fields: [authorId], references: [id])
 

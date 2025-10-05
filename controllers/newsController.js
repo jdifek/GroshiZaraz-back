@@ -1,4 +1,68 @@
+const { supabase } = require("../utils/supabaseClient");
 const service = require("../services/newsService");
+
+async function uploadFile(file) {
+  if (!file) return null;
+
+  const { data, error } = await supabase.storage
+    .from("news-images")
+    .upload(`news/${Date.now()}-${file.originalname}`, file.buffer, {
+      contentType: file.mimetype,
+    });
+
+  if (error) throw error;
+
+  const { data: publicUrl } = supabase.storage
+    .from("news-images")
+    .getPublicUrl(data.path);
+
+  return publicUrl.publicUrl;
+}
+
+exports.create = async (req, res) => {
+  try {
+    const imageUrl = await uploadFile(req.file);
+
+    const payload = {
+      ...req.body,
+      published: req.body.published === "true" || req.body.published === true,
+      views: Number(req.body.views) || 0,
+      readingMinutes: Number(req.body.readingMinutes) || 0,
+      authorId: Number(req.body.authorId),
+      newsCategoryId: Number(req.body.newsCategoryId),
+      ...(imageUrl ? { image: imageUrl } : {}),
+    };
+
+    const news = await service.create(payload);
+    res.status(201).json(news);
+  } catch (err) {
+    console.error("Ошибка при создании новости:", err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+exports.update = async (req, res) => {
+  try {
+    const imageUrl = await uploadFile(req.file);
+
+    const payload = {
+      ...req.body,
+      published: req.body.published === "true" || req.body.published === true,
+      views: Number(req.body.views) || 0,
+      readingMinutes: Number(req.body.readingMinutes) || 0,
+      authorId: Number(req.body.authorId),
+      newsCategoryId: Number(req.body.newsCategoryId),
+      ...(imageUrl ? { image: imageUrl } : {}),
+    };
+
+    const news = await service.update(req.params.id, payload);
+    res.json(news);
+  } catch (err) {
+    console.error("Ошибка при обновлении новости:", err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
 
 exports.getAll = async (req, res) => {
   try {
@@ -53,23 +117,7 @@ exports.getStatistics = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-exports.create = async (req, res) => {
-  try {
-    const result = await service.create(req.body);
-    res.status(201).json(result);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
 
-exports.update = async (req, res) => {
-  try {
-    const result = await service.update(req.params.id, req.body);
-    res.json(result);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
 
 exports.remove = async (req, res) => {
   try {
