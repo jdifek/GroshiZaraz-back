@@ -331,6 +331,8 @@ model MfoSatelliteKey {
   titleRu       String
   descriptionUk String
   descriptionRu String
+seoContentUk String @db.Text @default("")
+seoContentRu String @db.Text @default("")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -366,6 +368,8 @@ model MfoSatellite {
   descriptionUk String
   descriptionRu String
 
+ seoContentUk String @db.Text @default("")
+  seoContentRu String @db.Text @default("")
   slugUk String @unique
   slugRu String @unique
 
