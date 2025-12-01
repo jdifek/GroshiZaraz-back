@@ -1,7 +1,12 @@
 const prisma = require("../utils/prisma");
 
-exports.getAll = () => prisma.mfoSatelliteKey.findMany({
-  include: { satellites: true, mfoLinks: { include: { mfo: true } } }
+exports.getAllSitemap = () => prisma.mfoSatelliteKey.findMany({
+  select: {
+    slugRu: true,
+    slugUk: true,
+    updatedAt: true
+    
+  }
 });
 exports.getBySlug = async (slug, sortBy = "rating") => {
   try {

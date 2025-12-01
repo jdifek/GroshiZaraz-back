@@ -3,6 +3,7 @@ const router = express.Router();
 const controller = require("../controllers/mfoSatellitesController");
 
 router.get("/", controller.getAll);
+router.get("/", controller.getAllSitemap);
 router.get("/:id", controller.getOne);
 router.post("/", controller.createWithAllMfo); // при создании сразу все МФО
 router.put("/:id", controller.update);

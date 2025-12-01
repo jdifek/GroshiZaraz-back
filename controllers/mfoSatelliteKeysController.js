@@ -7,6 +7,13 @@ exports.getAll = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.getAllSitemap = async (req, res) => {
+  try {
+    res.json(await service.getAllSitemap());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 exports.getBySlug = async (req, res) => {
   try {
     const slug = req.params.slug;  

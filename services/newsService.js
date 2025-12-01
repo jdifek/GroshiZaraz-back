@@ -14,6 +14,7 @@ exports.getAllSitemap = async () => {
   return await prisma.news.findMany({
     select: {
       slug: true,
+      slugUk: true,
       id: true,
       updatedAt: true
     }

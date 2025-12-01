@@ -3,6 +3,7 @@ const router = express.Router();
 const controller = require("../controllers/mfoSatelliteKeysController");
 
 router.get("/", controller.getAll);
+router.get("/sitemap", controller.getAllSitemap);
 router.get("/short", controller.getShort); // новый эндпоинт
 router.get("/slug/:slug", controller.getBySlug);
 

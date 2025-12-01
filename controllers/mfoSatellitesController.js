@@ -8,6 +8,14 @@ exports.getAll = async (req, res) => {
   }
 };
 
+exports.getAllSitemap = async (req, res) => {
+  try {
+    res.json(await service.getAllSitemap());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 
 
 exports.getOne = async (req, res) => {
