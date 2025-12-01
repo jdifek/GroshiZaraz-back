@@ -21,6 +21,16 @@ exports.getAll = async (sortBy = "rating", order = "desc") => {
     },
   });
 };
+exports.getAllSitemap = async () => {
+
+  return await prisma.mfo.findMany({
+    select: {
+      slug: true,
+      id: true,
+      updatedAt: true
+    }
+  });
+};
 
 
 exports.getBySlugKey = async (slug) => {
@@ -207,5 +217,30 @@ exports.update = async (id, data) => {
 };
 
 exports.remove = async (id) => {
-  return await prisma.mfo.delete({ where: { id: Number(id) } });
+  const mfoId = Number(id);
+
+  // Удаляем связи с сателлитами
+  await prisma.mfoSatelliteMfo.deleteMany({
+    where: { mfoId },
+  });
+
+  // Удаляем связи с ключами
+  await prisma.mfoSatelliteKeyMfo.deleteMany({
+    where: { mfoId },
+  });
+
+  // Удаляем промокоды и лицензии
+  await prisma.promoCode.deleteMany({ where: { mfoId } });
+  await prisma.license.deleteMany({ where: { mfoId } });
+
+  // Теперь можно удалить сам Mfo
+  return await prisma.mfo.delete({ where: { id: mfoId } });
 };
+
+exports.hidden = async (id) => {
+  const mfoId = Number(id);
+
+
+  return await prisma.mfo.update({ where: { id: mfoId }, data: { isActive: false } });
+};
+

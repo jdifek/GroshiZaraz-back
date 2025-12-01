@@ -11,6 +11,7 @@ router.put("/:id", upload.single("image"), controller.update);
 router.get("/slug/:slug", controller.getBySlug);
 router.get("/category/:slug", controller.getByCategorySlug);
 router.get("/", controller.getAll);
+router.get("/sitemap", controller.getAllSitemap);
 router.get("/:id", controller.getOne);
 router.get("/dashboard/statistic", controller.getStatistics);
 

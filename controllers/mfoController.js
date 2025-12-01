@@ -88,9 +88,18 @@ exports.update = async (req, res) => {
 // Контроллер
 exports.getAll = async (req, res) => {
   try {
-    const { sortBy = "rating", order = "desc" } = req.query;
 
-    const result = await service.getAll(sortBy, order);
+    const result = await service.getAll();
+    res.json(result);
+  } catch (err) {
+    console.error("Error in getAll:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+exports.getAllSitemap = async (req, res) => {
+  try {
+
+    const result = await service.getAllSitemap();
     res.json(result);
   } catch (err) {
     console.error("Error in getAll:", err);
@@ -139,6 +148,14 @@ exports.getOne = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     await service.remove(req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+exports.hidden = async (req, res) => {
+  try {
+    await service.hidden(req.params.id);
     res.status(204).send();
   } catch (err) {
     res.status(400).json({ error: err.message });

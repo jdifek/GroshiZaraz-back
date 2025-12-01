@@ -72,6 +72,14 @@ exports.getAll = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.getAllSitemap = async (req, res) => {
+  try {
+    const result = await service.getAllSitemap();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 exports.getBySlug = async (req, res) => {
   try {
     const result = await service.getBySlug(req.params.slug);

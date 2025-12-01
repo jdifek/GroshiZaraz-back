@@ -10,13 +10,22 @@ exports.getAll = async () => {
     },
   });
 };
+exports.getAllSitemap = async () => {
+  return await prisma.news.findMany({
+    select: {
+      slug: true,
+      id: true,
+      updatedAt: true
+    }
+  });
+};
 exports.getByCategorySlug = async (slug) => {
   return await prisma.news.findMany({
     where: {
       NewsCategory: {
         slug: slug,
       },
-      published: true, 
+      published: true,
     },
     include: {
       author: true,
