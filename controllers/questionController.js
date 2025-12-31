@@ -29,6 +29,7 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
+    
     const result = await service.update(req.params.id, req.body);
     res.json(result);
   } catch (err) {

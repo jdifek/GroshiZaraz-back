@@ -10,7 +10,25 @@ exports.getAll = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.getByCategory = async (req, res) => {
+  try {
+    const result = await service.getByCategory(req.params.category, req.query.limit);
+    if (!result) return res.status(404).json({ error: "Not found" });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
+exports.getOneBySlug = async (req, res) => {
+  try {
+    const result = await service.getOneBySlug(req.params.slug);
+    if (!result) return res.status(404).json({ error: "Not found" });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
 exports.getOne = async (req, res) => {
   try {

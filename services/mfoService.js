@@ -139,8 +139,8 @@ exports.getBySlug = async (slug, isSite = false) => {
 
   // Вопросы
   const questions = await prisma.question.findMany({
-    where: { targetType: "mfo", targetId: mfoWithData.id },
-    include: { answers: { include: { expert: true } } },
+    where: { targetType: "mfo", targetId: mfoWithData.id, ...(isSite ? { isModerated: true } : {}), },
+    include: { answers: { include: { expert: true }, where: { ...(isSite ? { isModerated: true } : {}) } } },
     orderBy: { createdAt: "desc" },
   });
 

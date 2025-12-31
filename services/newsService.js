@@ -1,9 +1,10 @@
 const prisma = require("../utils/prisma");
 
-exports.getAll = async () => {
+exports.getAll = async (limit) => {
   return await prisma.news.findMany({
     orderBy: { createdAt: "desc" },
-
+    where: { published: true },
+    take: limit,
     include: {
       author: true,
       NewsCategory: true,
@@ -47,14 +48,34 @@ exports.getStatistics = async () => {
   };
 };
 exports.getBySlug = async (slug) => {
-  return await prisma.news.findUnique({
-    where: { slug },
+  // ищем новость по slug или slugUk и увеличиваем views
+  const news = await prisma.news.update({
+    where: {
+      // Используем findFirst, если хотим искать по нескольким полям
+      id: (
+        await prisma.news.findFirst({
+          where: {
+            OR: [
+              { slug },
+              { slugUk: slug } // ищем и по украинскому слагу
+            ]
+          }
+        })
+      )?.id,
+    },
+    data: {
+      views: { increment: 1 }, // увеличиваем на 1
+    },
     include: {
       author: true,
       NewsCategory: true,
     },
   });
+
+  return news;
 };
+
+
 
 exports.getOne = async (id) => {
   return await prisma.news.findUnique({ where: { id: Number(id) } });

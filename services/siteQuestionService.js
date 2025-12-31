@@ -22,7 +22,7 @@ exports.getAllSiteQuestions = async ({ onlyModerated, sortByModerated }) => {
     include: {
       answers: {
         include: {
-          expert: true // Включаем информацию об эксперте
+          expert: true 
         },
         orderBy: { createdAt: 'desc' }
       },
@@ -34,6 +34,69 @@ exports.getAllSiteQuestions = async ({ onlyModerated, sortByModerated }) => {
 exports.getOne = async (id) => {
   return await prisma.question.findUnique({ where: { id } });
 };
+exports.getOneBySlug = async (slug) => {
+  return await prisma.question.findFirst({
+    where: {
+      slug,
+      isModerated: true,
+      targetType: 'site',
+    },
+    include: {
+      answers: {
+        where: {
+          isModerated: true
+        },
+        include: {
+          expert: true,
+        },
+      },
+    },
+  });
+};
+exports.getByCategory = async (category, limit = 10) => {
+  // 1️⃣ Берём вопросы нужной категории
+  const primary = await prisma.question.findMany({
+    where: {
+      category: category,
+      isModerated: true,
+      targetType: "site",
+    },
+    include: {
+      answers: true,
+    },
+    take: +limit,
+  });
+
+  // Если хватило — сразу возвращаем
+  if (primary.length >= +limit) {
+    return primary;
+  }
+
+  // 2️⃣ Считаем сколько не хватает
+  const remaining = +limit - primary.length;
+
+  // 3️⃣ Добираем из других категорий
+  const fallback = await prisma.question.findMany({
+    where: {
+      category: {
+        not: category,
+      },
+      isModerated: true,
+      targetType: "site",
+      id: {
+        notIn: primary.map((q) => q.id),
+      },
+    },
+    include: {
+      answers: true,
+    },
+    take: +remaining,
+  });
+
+  // 4️⃣ Склеиваем результат
+  return [...primary, ...fallback];
+};
+
 
 exports.create = async (data) => {
   return await prisma.question.create({ data });

@@ -147,6 +147,7 @@ model License {
 
 model Question {
   id           Int              @id @default(autoincrement())
+  slug         String 
   name         String? // Делаем опциональным
   email        String? // Делаем опциональным
   subject      String
@@ -177,7 +178,7 @@ model QuestionAnswer {
 
   createdAt DateTime @default(now())
 
-  question Question @relation(fields: [questionId], references: [id])
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   expert   Expert?  @relation(fields: [expertId], references: [id])
 }
 
@@ -228,21 +229,23 @@ model NewsCategory {
 }
 
 model Author {
-  id           Int     @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   name         String
   nameUk       String?
-  slug         String  @unique
+  slug         String   @unique
   avatar       String
   bio          String?
   bioUk        String?
   position     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   positionUk   String?
   experience   String
   experienceUk String?
-  followers    Int     @default(0)
+  followers    Int      @default(0)
   color        String?
-  totalViews   Int     @default(0)
-  totalPosts   Int     @default(0)
+  totalViews   Int      @default(0)
+  totalPosts   Int      @default(0)
 
   expertise      String[]
   expertiseUk    String[]
@@ -281,9 +284,9 @@ model News {
   updatedAt      DateTime @updatedAt
   views          Int      @default(0)
   readingMinutes Int?
- image          String?
-  authorId Int
-  author   Author @relation(fields: [authorId], references: [id])
+  image          String?
+  authorId       Int
+  author         Author   @relation(fields: [authorId], references: [id])
 
   newsCategoryId Int?
   NewsCategory   NewsCategory? @relation(fields: [newsCategoryId], references: [id])
@@ -331,8 +334,8 @@ model MfoSatelliteKey {
   titleRu       String
   descriptionUk String
   descriptionRu String
-seoContentUk String @db.Text @default("")
-seoContentRu String @db.Text @default("")
+  seoContentUk  String @default("") @db.Text
+  seoContentRu  String @default("") @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -368,10 +371,10 @@ model MfoSatellite {
   descriptionUk String
   descriptionRu String
 
- seoContentUk String @db.Text @default("")
-  seoContentRu String @db.Text @default("")
-  slugUk String @unique
-  slugRu String @unique
+  seoContentUk String @default("") @db.Text
+  seoContentRu String @default("") @db.Text
+  slugUk       String @unique
+  slugRu       String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

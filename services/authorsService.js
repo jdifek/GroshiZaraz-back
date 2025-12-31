@@ -1,5 +1,16 @@
 const prisma = require("../utils/prisma");
 
+exports.getAllStatic = async (req, res) => {
+  try {
+    console.log('📝 Getting all authors...');
+    const authors = await prisma.author.findMany(); 
+    console.log(`✅ Found ${authors.length} authors`);
+    return authors
+  } catch (error) {
+    console.error('❌ Error in getAll controller:', error);
+    res.status(500).json({ error: 'Ошибка при получении авторов' });
+  }
+};
 exports.getAll = async () => {
   const authors = await prisma.author.findMany({
     include: {

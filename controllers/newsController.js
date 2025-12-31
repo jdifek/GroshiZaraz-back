@@ -65,8 +65,9 @@ exports.update = async (req, res) => {
 
 
 exports.getAll = async (req, res) => {
+  const { limit } = req.query
   try {
-    const result = await service.getAll();
+    const result = await service.getAll(limit);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -109,7 +110,7 @@ exports.getByCategorySlug = async (req, res) => {
       console.warn(`[WARN] No news found for category slug '${req.params.slug}'`);
       return res.status(404).json({ error: "No news found for this category slug" });
     }
-    
+
     res.json(result);
   } catch (err) {
     console.error(`[ERROR] Error fetching news by category slug '${req.params.slug}':`, err);

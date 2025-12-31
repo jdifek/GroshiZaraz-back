@@ -29,6 +29,21 @@ exports.createWithAllMfo = async (data) => {
     include: { mfoLinks: { include: { mfo: true } } }
   });
 };
+exports.getAll = async () => {
+  return prisma.mfoSatellite.findMany({
+    include: {
+      key: true,
+      mfoLinks: {
+        include: {
+          mfo: true,
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+};
 
 exports.update = (id, data) => prisma.mfoSatellite.update({
   where: { id },

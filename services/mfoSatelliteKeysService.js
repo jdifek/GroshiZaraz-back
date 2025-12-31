@@ -8,6 +8,30 @@ exports.getAllSitemap = () => prisma.mfoSatelliteKey.findMany({
     
   }
 });
+exports.getAll = async () => {
+  return prisma.mfoSatelliteKey.findMany({
+    include: {
+      satellites: {
+        include: {
+          mfoLinks: {
+            include: {
+              mfo: true,
+            },
+          },
+        },
+      },
+      mfoLinks: {
+        include: {
+          mfo: true,
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+};
+
 exports.getBySlug = async (slug, sortBy = "rating") => {
   try {
     console.log("📌 getBySlug called");

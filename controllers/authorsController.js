@@ -1,5 +1,13 @@
 const service = require("../services/authorsService");
 
+exports.getAllStatic = async (req, res) => {
+  try {
+    const result = await service.getAllStatic();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 exports.getAll = async (req, res) => {
   try {
     const result = await service.getAll();
