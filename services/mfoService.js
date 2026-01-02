@@ -1,6 +1,10 @@
 const prisma = require("../utils/prisma");
-exports.getAll = async (sortBy = "rating", order = "desc") => {
-  // mapping для безопасности
+exports.getAll = async (
+  sortBy = "rating",
+  order = "desc",
+  limit = 20,
+  offset = 0
+) => {
   const sortableFields = {
     rating: "rating",
     rate: "dailyRate",
@@ -9,18 +13,49 @@ exports.getAll = async (sortBy = "rating", order = "desc") => {
     maxAmount: "maxAmount",
   };
 
-  // если передан некорректный ключ, используем рейтинг по умолчанию
   const orderField = sortableFields[sortBy] || "rating";
+  const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 100);
+  const safeOffset = Math.max(Number(offset) || 0, 0);
 
-  return await prisma.mfo.findMany({
+  // 1️⃣ Получаем МФО (БЕЗ reviews)
+  const mfos = await prisma.mfo.findMany({
     include: {
-      promoCodes: true, // включаем промокоды
+      promoCodes: true,
+      faqs: true,
     },
     orderBy: {
-      [orderField]: order, // 'asc' или 'desc'
+      [orderField]: order === "asc" ? "asc" : "desc",
+    },
+    take: safeLimit,
+    skip: safeOffset,
+  });
+
+  // 2️⃣ Считаем отзывы
+  const reviewCounts = await prisma.review.groupBy({
+    by: ["targetId"],
+    where: {
+      targetType: "mfo",
+      targetId: { in: mfos.map(m => m.id) },
+      isModerated: true, // для сайта
+    },
+    _count: {
+      _all: true,
     },
   });
+
+  const reviewMap = new Map(
+    reviewCounts.map(r => [r.targetId, r._count._all])
+  );
+
+  // 3️⃣ Подставляем В ПОЛЕ reviews
+  return mfos.map(mfo => ({
+    ...mfo,
+    reviews: reviewMap.get(mfo.id) || 0, // 🔥 ВАЖНО
+  }));
 };
+
+
+
 exports.getAllSitemap = async () => {
 
   return await prisma.mfo.findMany({
@@ -123,14 +158,14 @@ exports.randomKeys = async () => {
 exports.getOne = async (id) => {
   return await prisma.mfo.findUnique({
     where: { id: Number(id) },
-    include: { promoCodes: true }, // включаем промокоды
+    include: { promoCodes: true, faqs: true }, // включаем промокоды
   });
 };
 
 exports.getBySlug = async (slug, isSite = false) => {
   const mfoWithData = await prisma.mfo.findUnique({
     where: { slug },
-    include: { promoCodes: true },
+    include: { promoCodes: true,  faqs: true },
   });
 
   if (!mfoWithData) {
@@ -189,29 +224,104 @@ exports.create = async (data) => {
 
 
 
-exports.update = async (id, data) => {
-  const { promoCodes, ...mfoData } = data;
+
+
+
+exports.create = async (data, faqs = [], promoCodes = []) => {
+  const { ...mfoData } = data;
+
+  return await prisma.mfo.create({
+    data: {
+      ...mfoData,
+      
+      // ✅ FAQ
+      ...(faqs && Array.isArray(faqs) && faqs.length > 0
+        ? {
+            faqs: {
+              create: faqs.map((faq) => ({
+                questionRu: faq.questionRu,
+                questionUk: faq.questionUk,
+                answerRu: faq.answerRu,
+                answerUk: faq.answerUk,
+                order: faq.order ?? 0,
+                isActive: faq.isActive ?? true,
+              })),
+            },
+          }
+        : {}),
+      
+      // ✅ PromoCodes
+      ...(promoCodes && Array.isArray(promoCodes) && promoCodes.length > 0
+        ? {
+            promoCodes: {
+              create: promoCodes.map((pc) => ({
+                code: pc.code,
+                discount: pc.discount,
+                condition: pc.condition,
+                validTill: new Date(pc.validTill),
+              })),
+            },
+          }
+        : {}),
+    },
+    include: {
+      faqs: true,
+      promoCodes: true,
+    },
+  });
+};
+
+exports.update = async (id, data, faqs = [], promoCodes = []) => {
+  const { ...mfoData } = data;
+
+  // 🔍 ДОБАВЬТЕ ЭТО ДЛЯ ОТЛАДКИ
+  console.log("🔄 Service update:", {
+    id,
+    mfoData,
+    faqs,
+    promoCodes
+  });
 
   return await prisma.mfo.update({
     where: { id: Number(id) },
     data: {
       ...mfoData,
-      // Обновляем промокоды только если они есть
-      ...(promoCodes && Array.isArray(promoCodes)
+
+      // ✅ FAQ
+      ...(faqs && Array.isArray(faqs) && faqs.length > 0
         ? {
-          promoCodes: {
-            // Очищаем старые промокоды
-            deleteMany: {},
-            // Создаём новые
-            create: promoCodes.map(pc => ({
-              code: pc.code,
-              discount: pc.discount,
-              condition: pc.condition,
-              validTill: new Date(pc.validTill),
-            })),
-          },
-        }
+            faqs: {
+              deleteMany: {},
+              create: faqs.map((faq) => ({
+                questionRu: faq.questionRu || "",
+                questionUk: faq.questionUk || "",
+                answerRu: faq.answerRu || "",
+                answerUk: faq.answerUk || "",
+                order: faq.order ?? 0,
+                isActive: faq.isActive ?? true,
+              })),
+            },
+          }
         : {}),
+
+      // ✅ PromoCodes
+      ...(promoCodes && Array.isArray(promoCodes) && promoCodes.length > 0
+        ? {
+            promoCodes: {
+              deleteMany: {},
+              create: promoCodes.map((pc) => ({
+                code: pc.code || "",
+                discount: pc.discount || "",
+                condition: pc.condition || "",
+                validTill: pc.validTill ? new Date(pc.validTill) : new Date(),
+              })),
+            },
+          }
+        : {}),
+    },
+    include: {
+      faqs: true,
+      promoCodes: true,
     },
   });
 };

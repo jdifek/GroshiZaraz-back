@@ -2,7 +2,7 @@ const service = require("../services/mfoService");
 const { supabase } = require("../utils/supabaseClient");
 
 const numericFields = [
-  "rating", "reviews", "minAmount", "maxAmount",
+  "rating","loansIssued","satisfiedClients", "reviews", "minAmount", "maxAmount",
   "minTerm", "maxTerm", "rateMin", "rateMax",
   "approvalRate", "ageFrom", "ageTo", "dailyRate", "commission"
 ];
@@ -16,16 +16,19 @@ const booleanFields = [
 function normalizeBody(body, logoUrl) {
   const data = {
     ...body,
-    promoCodes: body.promoCodes ? JSON.parse(body.promoCodes) : [],
     ...(logoUrl ? { logo: logoUrl } : {}),
   };
 
   numericFields.forEach((field) => {
-    if (data[field] !== undefined) data[field] = parseFloat(data[field]);
+    if (data[field] !== undefined) {
+      data[field] = Number(data[field]);
+    }
   });
 
   booleanFields.forEach((field) => {
-    if (data[field] !== undefined) data[field] = data[field] === "true" || data[field] === true;
+    if (data[field] !== undefined) {
+      data[field] = data[field] === "true" || data[field] === true;
+    }
   });
 
   return data;
@@ -49,24 +52,37 @@ exports.create = async (req, res) => {
       logoUrl = publicUrl.publicUrl;
     }
 
-    const body = normalizeBody(req.body, logoUrl);
-    const result = await service.create(body);
+    // ✅ FAQ отдельно
+    const faqs = req.body.faqs ? JSON.parse(req.body.faqs) : [];
+    
+    // ✅ PromoCodes отдельно
+    const promoCodes = req.body.promoCodes ? JSON.parse(req.body.promoCodes) : [];
+    
+    // ✅ Удаляем faqs и promoCodes из req.body ПЕРЕД нормализацией
+    const { faqs: _, promoCodes: __, ...cleanBody } = req.body;
+    
+    const body = normalizeBody(cleanBody, logoUrl);
+    
+    const result = await service.create(body, faqs, promoCodes);
     res.status(201).json(result);
   } catch (err) {
     console.error("Ошибка при создании МФО:", err);
     res.status(400).json({ error: err.message });
   }
 };
-
 exports.update = async (req, res) => {
   try {
     let logoUrl;
+
     if (req.file) {
       const { data, error } = await supabase.storage
         .from("logos")
-        .upload(`logos/${Date.now()}-${req.file.originalname}`, req.file.buffer, {
-          contentType: req.file.mimetype,
-        });
+        .upload(
+          `logos/${Date.now()}-${req.file.originalname}`,
+          req.file.buffer,
+          { contentType: req.file.mimetype }
+        );
+
       if (error) throw error;
 
       const { data: publicUrl } = supabase.storage
@@ -76,8 +92,32 @@ exports.update = async (req, res) => {
       logoUrl = publicUrl.publicUrl;
     }
 
-    const body = normalizeBody(req.body, logoUrl);
-    const result = await service.update(req.params.id, body);
+    // ✅ FAQ отдельно
+    const faqs = req.body.faqs ? JSON.parse(req.body.faqs) : [];
+    
+    // ✅ PromoCodes отдельно
+    const promoCodes = req.body.promoCodes ? JSON.parse(req.body.promoCodes) : [];
+
+    // ✅ Удаляем faqs и promoCodes из req.body ПЕРЕД нормализацией
+    const { faqs: _, promoCodes: __, ...cleanBody } = req.body;
+    
+    // ✅ Нормализация обычных полей (БЕЗ faqs и promoCodes)
+    const body = normalizeBody(cleanBody, logoUrl);
+
+    console.log("📝 Update data:", {
+      id: req.params.id,
+      body: body,
+      faqs: faqs,
+      promoCodes: promoCodes
+    });
+
+    const result = await service.update(
+      Number(req.params.id),
+      body,
+      faqs,
+      promoCodes
+    );
+
     res.json(result);
   } catch (err) {
     console.error("Ошибка при обновлении МФО:", err);
@@ -85,17 +125,25 @@ exports.update = async (req, res) => {
   }
 };
 
-// Контроллер
 exports.getAll = async (req, res) => {
-  try {
+  const { sortBy } = req.params;
+  const { limit, offset, order } = req.query;
 
-    const result = await service.getAll();
+  try {
+    const result = await service.getAll(
+      sortBy,
+      order,
+      limit,
+      offset
+    );
+
     res.json(result);
   } catch (err) {
     console.error("Error in getAll:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
 exports.getAllSitemap = async (req, res) => {
   try {
 
@@ -126,7 +174,7 @@ exports.getBySlugKey = async (req, res) => {
 };
 exports.getBySlug = async (req, res) => {
   try {
-    const result = await service.getBySlug(req.params.slug, req.isSite); 
+    const result = await service.getBySlug(req.params.slug, req.isSite);
     if (!result) return res.status(404).json({ error: "Not found" });
     res.json(result);
   } catch (err) {

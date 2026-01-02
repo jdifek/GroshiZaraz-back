@@ -65,12 +65,30 @@ model Expert {
   reviewAnswers   ReviewAnswer[]
 }
 
+model MfoFaq {
+  id        Int      @id @default(autoincrement())
+  mfoId     Int
+  mfo       Mfo      @relation(fields: [mfoId], references: [id], onDelete: Cascade)
+
+  questionRu String
+  questionUk String
+
+  answerRu   String
+  answerUk   String
+
+  order      Int      @default(0) // сортировка в админке
+
+  isActive   Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Mfo {
   id            Int     @id @default(autoincrement())
   name          String
   UtmLink       String?
   rating        Float
-  reviews       Int
   logo          String
   licenseNumber String?
   isActive      Boolean @default(true)
@@ -93,6 +111,10 @@ model Mfo {
   isSafeTransactions Boolean @default(false)
   isFlexibleTerms    Boolean @default(false)
 
+
+  // 📊 Статистика
+  loansIssued       Int?    // Видано позик
+  satisfiedClients  Int?    // Задоволені клієнти
   // Требования
   ageFrom     Int
   ageTo       Int
@@ -101,6 +123,7 @@ model Mfo {
 
   // Контакты и описание
   description      String?
+   descriptionUk    String?  // Опис українською
   phone            String?
   website          String?
   workTimeWeekdays String?
@@ -118,6 +141,8 @@ model Mfo {
   updatedAt DateTime @updatedAt
 
   // Связи
+    faqs                MfoFaq[]   // 👈 ЧАСТЫЕ ВОПРОСЫ
+
   License            License[]
   mfoSatelliteLinks  MfoSatelliteMfo[]
   MfoSatelliteKeyMfo MfoSatelliteKeyMfo[]
