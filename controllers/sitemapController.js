@@ -16,11 +16,13 @@ exports.getHumanSitemap = async (req, res) => {
       static: [
         { titleUk: "Головна", titleRu: "Главная", pathUk: "/", pathRu: "/" },
         { titleUk: "МФО", titleRu: "МФО", pathUk: "/mfos", pathRu: "/mfos" },
+        { titleUk: "Обмін валют", titleRu: "Обмен валют", pathUk: "/currency-exchange", pathRu: "/currency-exchange" }, // ✅ ДОБАВЛЕНО
         { titleUk: "Про нас", titleRu: "О нас", pathUk: "/about", pathRu: "/about" },
         { titleUk: "Відгуки", titleRu: "Отзывы", pathUk: "/reviews", pathRu: "/reviews" },
         { titleUk: "Журнал", titleRu: "Журнал", pathUk: "/journal", pathRu: "/journal" },
         { titleUk: "Конфіденційність", titleRu: "Конфиденциальность", pathUk: "/privacy", pathRu: "/privacy" },
         { titleUk: "Умови", titleRu: "Условия", pathUk: "/terms", pathRu: "/terms" },
+        { titleUk: "Карта сайту", titleRu: "Карта сайта", pathUk: "/sitemap", pathRu: "/sitemap" }, // ✅ ДОБАВЛЕНО
       ],
       mfos: mfos.map(m => ({
         id: m.id,
@@ -28,12 +30,12 @@ exports.getHumanSitemap = async (req, res) => {
         slug: m.slug,
         updatedAt: m.updatedAt,
       })),
-      news: news.map(n => ({ // ❌ БЫЛО: m => { без return
+      news: news.map(n => ({
         id: n.id,
-        title: n.title,        // ✅ RU заголовок
-        titleUk: n.titleUk,    // ✅ UK заголовок
-        slug: n.slug,          // ✅ RU slug
-        slugUk: n.slugUk,      // ✅ UK slug
+        title: n.title,
+        titleUk: n.titleUk,
+        slug: n.slug,
+        slugUk: n.slugUk,
         updatedAt: n.updatedAt,
       })),
       satelliteKeys: satelliteKeys.map(s => ({
