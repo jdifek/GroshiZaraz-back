@@ -44,6 +44,7 @@ app.use("/api/questions", questionRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/site-reviews", siteReviewRoutes);
 app.use("/api/site-questions", siteQuestionRoutes);
+app.use("/api/sitemap", require("./routes/sitemap"));
 
 app.get("/api/dashboard", async (req, res) => {
   try {

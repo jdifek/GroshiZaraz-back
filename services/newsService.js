@@ -14,9 +14,11 @@ exports.getAll = async (limit) => {
 exports.getAllSitemap = async () => {
   return await prisma.news.findMany({
     select: {
+      id: true,
       slug: true,
       slugUk: true,
-      id: true,
+      title: true,
+      titleUk: true,
       updatedAt: true
     }
   });

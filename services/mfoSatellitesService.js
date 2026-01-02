@@ -1,12 +1,18 @@
 const prisma = require("../utils/prisma");
 
-exports.getAllSitemap = () => prisma.mfoSatellite.findMany({
-select: {
-  slugRu: true,
-  slugUk: true,
-  updatedAt: true
-}
-});
+exports.getAllSitemap = async () => { // ✅ добавил async
+  return await prisma.mfoSatellite.findMany({
+    select: {
+      id: true,        // ✅ добавил
+      slugRu: true,
+      slugUk: true,
+      titleUk: true,
+      titleRu: true,
+      updatedAt: true
+    }
+  });
+};
+
 
 exports.getOne = (id) => prisma.mfoSatellite.findUnique({
   where: { id },

@@ -1,13 +1,17 @@
 const prisma = require("../utils/prisma");
 
-exports.getAllSitemap = () => prisma.mfoSatelliteKey.findMany({
-  select: {
-    slugRu: true,
-    slugUk: true,
-    updatedAt: true
-    
-  }
-});
+exports.getAllSitemap = async () => { // ✅ добавил async
+  return await prisma.mfoSatelliteKey.findMany({
+    select: {
+      id: true,        // ✅ добавил
+      slugRu: true,
+      slugUk: true,
+      titleRu: true,   // ✅ добавил
+      titleUk: true,   // ✅ добавил
+      updatedAt: true
+    }
+  });
+};
 exports.getAll = async () => {
   return prisma.mfoSatelliteKey.findMany({
     include: {

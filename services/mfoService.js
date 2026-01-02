@@ -57,11 +57,11 @@ exports.getAll = async (
 
 
 exports.getAllSitemap = async () => {
-
   return await prisma.mfo.findMany({
     select: {
+      id: true,      // ✅ добавил
       slug: true,
-      id: true,
+      name: true,    // ✅ добавил
       updatedAt: true
     }
   });
