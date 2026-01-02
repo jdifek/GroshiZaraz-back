@@ -15,6 +15,7 @@ exports.getHumanSitemap = async (req, res) => {
     const sitemap = {
       static: [
         { titleUk: "Головна", titleRu: "Главная", pathUk: "/", pathRu: "/" },
+        { titleUk: "МФО", titleRu: "МФО", pathUk: "/mfos", pathRu: "/mfos" },
         { titleUk: "Про нас", titleRu: "О нас", pathUk: "/about", pathRu: "/about" },
         { titleUk: "Відгуки", titleRu: "Отзывы", pathUk: "/reviews", pathRu: "/reviews" },
         { titleUk: "Журнал", titleRu: "Журнал", pathUk: "/journal", pathRu: "/journal" },
