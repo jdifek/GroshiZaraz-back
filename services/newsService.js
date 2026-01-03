@@ -23,6 +23,16 @@ exports.getAllSitemap = async () => {
     }
   });
 };
+exports.getAllCategoriesSitemap = async () => {
+  return await prisma.newsCategory.findMany({
+    select: {
+      id: true,
+      name: true,
+      nameUk: true,
+      slug: true,
+    },
+  });
+};
 exports.getByCategorySlug = async (slug) => {
   return await prisma.news.findMany({
     where: {

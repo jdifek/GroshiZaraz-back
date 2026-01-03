@@ -30,6 +30,16 @@ exports.getAll = async () => {
   }));
 };
 
+exports.getAllSitemap = async () => {
+  return await prisma.author.findMany({
+    select: {
+      id: true,
+      name: true,
+      nameUk: true,
+      slug: true,
+    },
+  });
+};
 
 exports.getOne = async (id) => {
   return await prisma.author.findUnique({ where: { id: Number(id) } });
