@@ -354,3 +354,97 @@ exports.hidden = async (id) => {
   return await prisma.mfo.update({ where: { id: mfoId }, data: { isActive: false } });
 };
 
+exports.getBySlugUniversal = async (slug, sortBy = "rating") => {
+  try {
+    const sortableFields = {
+      rating: "rating",
+      rate: "dailyRate",
+      approval: "approvalRate",
+      decisionTime: "decisionTime",
+      maxAmount: "maxAmount",
+    };
+    const orderField = sortableFields[sortBy] || "rating";
+
+    // 1️⃣ Сначала ищем в ключах
+    let result = await prisma.mfoSatelliteKey.findFirst({
+      where: {
+        OR: [{ slugRu: slug }, { slugUk: slug }],
+      },
+      include: {
+        satellites: true,
+        mfoLinks: { include: { mfo: true } },
+      },
+    });
+
+    // 2️⃣ Если не нашли в ключах, ищем в сателлитах
+    if (!result) {
+      const satellite = await prisma.mfoSatellite.findFirst({
+        where: {
+          OR: [{ slugRu: slug }, { slugUk: slug }],
+        },
+        include: {
+          key: true,
+          mfoLinks: { include: { mfo: true } },
+        },
+      });
+
+      if (!satellite) return null;
+
+      // Преобразуем сателлит к формату ключа для единообразия
+      result = {
+        id: satellite.id,
+        keyUk: satellite.titleUk,
+        keyRu: satellite.titleRu,
+        slugUk: satellite.slugUk,
+        slugRu: satellite.slugRu,
+        metaTitleUk: satellite.metaTitleUk,
+        metaTitleRu: satellite.metaTitleRu,
+        metaDescUk: satellite.metaDescUk,
+        metaDescRu: satellite.metaDescRu,
+        titleUk: satellite.titleUk,
+        titleRu: satellite.titleRu,
+        descriptionUk: satellite.descriptionUk,
+        descriptionRu: satellite.descriptionRu,
+        seoContentUk: satellite.seoContentUk,
+        seoContentRu: satellite.seoContentRu,
+        createdAt: satellite.createdAt,
+        updatedAt: satellite.updatedAt,
+        satellites: [], // сателлит не имеет дочерних сателлитов
+        mfoLinks: satellite.mfoLinks,
+        isSatellite: true, // флаг что это сателлит
+        parentKey: satellite.key, // родительский ключ
+      };
+    }
+
+    // 3️⃣ Сортировка МФО
+    if (result.mfoLinks && result.mfoLinks.length > 0) {
+      result.mfoLinks.sort((a, b) => {
+        const aVal = a.mfo?.[orderField] ?? 0;
+        const bVal = b.mfo?.[orderField] ?? 0;
+        return bVal - aVal;
+      });
+    }
+
+    // 4️⃣ Расчет статистики
+    const mfos = result.mfoLinks.map(link => link.mfo).filter(Boolean);
+    const totalMfos = mfos.length;
+    
+    const averageRate = totalMfos > 0 
+      ? (mfos.reduce((sum, mfo) => {
+          const avgMfoRate = (mfo.rateMin + mfo.rateMax) / 2;
+          return sum + avgMfoRate;
+        }, 0) / totalMfos).toFixed(2)
+      : 0;
+
+    return {
+      ...result,
+      stats: {
+        totalMfos,
+        averageRate: parseFloat(averageRate)
+      }
+    };
+  } catch (err) {
+    console.error("❌ Error in getBySlugUniversal:", err);
+    throw err;
+  }
+};

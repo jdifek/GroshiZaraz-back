@@ -14,6 +14,8 @@ router.get("/sitemap", controller.getAllSitemap);
 router.get("/all-20-random-keys", controller.randomKeys);
 router.get("/all-mfo-from-key", controller.getBySlugKey);
 router.get("/slug/:slug", controller.getBySlug);
+router.get("/universal/:slug", controller.getBySlugUniversal);
+
 router.get("/:id", controller.getOne);
 
 // !!! тут меняем

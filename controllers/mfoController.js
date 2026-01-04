@@ -209,3 +209,21 @@ exports.hidden = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+exports.getBySlugUniversal = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { sortBy } = req.query;
+    
+    const result = await service.getBySlugUniversal(slug, sortBy);
+    
+    if (!result) {
+      return res.status(404).json({ error: "Not found" });
+    }
+    
+    res.json(result);
+  } catch (err) {
+    console.error("❌ Error in getBySlugUniversal:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
