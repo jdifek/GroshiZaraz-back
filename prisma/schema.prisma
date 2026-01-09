@@ -93,7 +93,7 @@ model Mfo {
   licenseNumber String?
   isActive      Boolean @default(true)
   slug          String  @unique
-
+  reviews Int?
   minAmount    Int
   maxAmount    Int
   minTerm      Int
@@ -250,6 +250,14 @@ model NewsCategory {
   slug   String @unique
 
   icon String?
+
+    // 🔍 SEO для страниц категорий
+  metaTitleRu       String?
+  metaTitleUk       String?
+  metaDescriptionRu String?
+  metaDescriptionUk String?
+  metaKeywordsRu    String?
+  metaKeywordsUk    String?
   news News[]
 }
 
@@ -276,7 +284,12 @@ model Author {
   expertiseUk    String[]
   achievements   String[]
   achievementsUk String[]
-
+  metaTitleRu       String?
+  metaTitleUk       String?
+  metaDescriptionRu String?
+  metaDescriptionUk String?
+    metaKeywordsRu    String?
+  metaKeywordsUk    String?
   telegram String?
   linkedin String?
   twitter  String?
@@ -314,6 +327,19 @@ model News {
   author         Author   @relation(fields: [authorId], references: [id])
 
   newsCategoryId Int?
+
+
+   // 🔍 SEO МЕТА-ТЕГИ (ДОБАВИТЬ)
+  metaTitleRu       String?
+  metaTitleUk       String?
+  metaDescriptionRu String?
+  metaDescriptionUk String?
+  metaKeywordsRu    String?
+  metaKeywordsUk    String?
+  
+  // Open Graph для соцсетей (опционально, но рекомендуется)
+  ogImageRu         String?
+  ogImageUk         String?
   NewsCategory   NewsCategory? @relation(fields: [newsCategoryId], references: [id])
 
   NewsLike NewsLike[]

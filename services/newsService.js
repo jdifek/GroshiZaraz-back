@@ -4,7 +4,7 @@ exports.getAll = async (limit) => {
   return await prisma.news.findMany({
     orderBy: { createdAt: "desc" },
     where: { published: true },
-    take: limit,
+    take: +limit,
     include: {
       author: true,
       NewsCategory: true,
