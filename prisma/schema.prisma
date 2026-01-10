@@ -118,9 +118,11 @@ model Mfo {
   // Требования
   ageFrom     Int
   ageTo       Int
-  citizenship String @default("РФ")
-  documents   String @default("Паспорт РФ")
-
+  citizenship String @default("Укр")
+  documents   String @default("Паспорт Укр")
+  
+  nbuCharacteristicsLink String? // Ссылка на характеристики НБУ
+  nbuWarningLink         String? // Ссылка на предупреждения НБУ
   // Контакты и описание
   description      String?
    descriptionUk    String?  // Опис українською
